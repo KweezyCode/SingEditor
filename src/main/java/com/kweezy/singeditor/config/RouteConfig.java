@@ -5,18 +5,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Data @Builder
 @NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RouteConfig {
     @Singular("rule")
-    private List<Map<String, Object>> rules;
+    private List<Rule> rules;
 
     @JsonProperty("rule_set")
     @Singular("ruleSet")
-    private List<Map<String, Object>> ruleSet;
+    private List<RuleSet> ruleSet;
 
     private String  finalTag;
 
@@ -47,4 +46,3 @@ public class RouteConfig {
     @JsonProperty("default_fallback_delay")
     private String  defaultFallbackDelay;
 }
-
