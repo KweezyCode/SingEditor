@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import com.kweezy.singeditor.config.common.DnsRule;
 import com.kweezy.singeditor.config.common.DnsServer;
+import com.kweezy.singeditor.config.common.FakeIP;
 
 import java.util.List;
 
@@ -28,4 +29,26 @@ public class DnsConfig {
 
     @Singular
     private List<DnsRule> rules;
+
+    @JsonProperty("final")
+    private String finalServer;
+
+    @JsonProperty("strategy")
+    private String strategy;
+
+    @JsonProperty("disable_cache")
+    private Boolean disableCache;
+
+    @JsonProperty("disable_expire")
+    private Boolean disableExpire;
+
+    @JsonProperty("independent_cache")
+    private Boolean independentCache;
+
+    /** Since sing-box 1.9.0 */
+    @JsonProperty("client_subnet")
+    private String clientSubnet;
+
+    @JsonProperty("fakeip")
+    private FakeIP fakeip;
 }
