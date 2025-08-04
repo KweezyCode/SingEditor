@@ -2,6 +2,7 @@ package com.kweezy.singeditor.config.outbound;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.kweezy.singeditor.config.common.DialFields;
 import com.kweezy.singeditor.config.common.MultiplexConfig;
 import com.kweezy.singeditor.config.common.TlsConfig;
@@ -19,5 +20,6 @@ public final class VlessOutbound implements TypedOutbound {
     private String flow;
     private TlsConfig tls;
     private MultiplexConfig multiplex;
-    @JsonProperty("dial_fields") private DialFields dialFields;
+    @JsonUnwrapped
+    private DialFields dialFields;
 }

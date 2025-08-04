@@ -2,6 +2,7 @@ package com.kweezy.singeditor.config.inbound;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.kweezy.singeditor.config.common.ListenFields;
 import com.kweezy.singeditor.config.common.PlatformConfig;
 import lombok.*;
@@ -19,5 +20,6 @@ public final class TunInbound implements TypedInbound {
     private Integer mtu;
     @JsonProperty("auto_route") private Boolean autoRoute;
     private PlatformConfig platform;
-    @JsonProperty("listen_fields") private ListenFields listenFields;
+    @JsonUnwrapped
+    private ListenFields listenFields;
 }

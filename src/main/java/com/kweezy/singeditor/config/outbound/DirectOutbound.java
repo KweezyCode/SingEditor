@@ -2,6 +2,7 @@ package com.kweezy.singeditor.config.outbound;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.*;
 import com.kweezy.singeditor.config.common.DialFields;
 
@@ -13,5 +14,6 @@ public final class DirectOutbound implements TypedOutbound {
 
     @JsonProperty("override_address") private String  overrideAddress;
     @JsonProperty("override_port")    private Integer overridePort;
-    @JsonProperty("dial_fields")      private DialFields dialFields;
+    @JsonUnwrapped
+    private DialFields dialFields;
 }

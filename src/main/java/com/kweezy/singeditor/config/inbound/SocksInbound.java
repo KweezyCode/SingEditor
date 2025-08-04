@@ -2,6 +2,7 @@ package com.kweezy.singeditor.config.inbound;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.kweezy.singeditor.config.common.ListenFields;
 import com.kweezy.singeditor.config.common.UdpOverTcp;
 import lombok.*;
@@ -18,5 +19,6 @@ public final class SocksInbound implements TypedInbound {
     private String username;
     private String password;
     @JsonProperty("udp_over_tcp") private UdpOverTcp udpOverTcp;
-    @JsonProperty("listen_fields") private ListenFields listenFields;
+    @JsonUnwrapped
+    private ListenFields listenFields;
 }
