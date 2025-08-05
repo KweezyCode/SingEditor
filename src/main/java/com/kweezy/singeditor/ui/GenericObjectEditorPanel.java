@@ -1,5 +1,7 @@
 package com.kweezy.singeditor.ui;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Field;
@@ -177,13 +179,51 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                 ParameterizedType addPt = (ParameterizedType) field.getGenericType();
                 Class<?> addElem = (Class<?>) addPt.getActualTypeArguments()[0];
                 if (addElem.isInterface() || Modifier.isAbstract(addElem.getModifiers())) {
-                    JOptionPane.showMessageDialog(GenericObjectEditorPanel.this,
-                        "Cannot add element for abstract/interface type: " + addElem.getSimpleName(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
+                    JsonSubTypes subTypesAnnotation = addElem.getAnnotation(JsonSubTypes.class);
+                    if (subTypesAnnotation != null && subTypesAnnotation.value().length > 0) {
+                        JsonSubTypes.Type[] types = subTypesAnnotation.value();
+                        String[] typeNames = new String[types.length];
+                        for (int i = 0; i < types.length; i++) {
+                            typeNames[i] = (types[i].name() != null && !types[i].name().isEmpty())
+                                    ? types[i].name()
+                                    : types[i].value().getSimpleName();
+                        }
+
+                        String selectedTypeName = (String) JOptionPane.showInputDialog(
+                                GenericObjectEditorPanel.this,
+                                "Select the type of " + addElem.getSimpleName() + " to add:",
+                                "Add Element",
+                                JOptionPane.PLAIN_MESSAGE,
+                                null,
+                                typeNames,
+                                typeNames[0]);
+
+                        if (selectedTypeName != null) {
+                            Class<?> selectedClass = null;
+                            for (JsonSubTypes.Type type : types) {
+                                String currentTypeName = (type.name() != null && !type.name().isEmpty())
+                                        ? type.name()
+                                        : type.value().getSimpleName();
+                                if (selectedTypeName.equals(currentTypeName)) {
+                                    selectedClass = type.value();
+                                    break;
+                                }
+                            }
+
+                            if (selectedClass != null) {
+                                Object inst = selectedClass.getDeclaredConstructor().newInstance();
+                                model.addElement(inst);
+                            }
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(GenericObjectEditorPanel.this,
+                                "Cannot add element for abstract/interface type: " + addElem.getSimpleName() + ". No subtypes defined.",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    Object inst = addElem.getDeclaredConstructor().newInstance();
+                    model.addElement(inst);
                 }
-                Object inst = addElem.getDeclaredConstructor().newInstance();
-                model.addElement(inst);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(GenericObjectEditorPanel.this,
                     "Error adding element: " + ex.getMessage(),
