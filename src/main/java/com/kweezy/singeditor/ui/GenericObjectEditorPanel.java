@@ -56,15 +56,13 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             btn.addActionListener(e -> {
                 Object sub;
                 try {
-                    sub = field.get(object);
-                    if (sub == null) {
-                        sub = field.getType().getDeclaredConstructor().newInstance();
-                    }
+                    sub = instantiateFieldInstance(field);
+                    if (sub == null) return;
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     return;
                 }
-                GenericObjectEditorPanel subPanel = new GenericObjectEditorPanel(field.getType());
+                GenericObjectEditorPanel<?> subPanel = new GenericObjectEditorPanel<>(sub.getClass());
                 subPanel.setObject(sub);
                 JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), field.getName(), Dialog.ModalityType.APPLICATION_MODAL);
                 dialog.getContentPane().add(new JScrollPane(subPanel), BorderLayout.CENTER);
@@ -178,55 +176,10 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         });
         add.addActionListener(e -> {
             try {
-                // get element type for adding
                 ParameterizedType addPt = (ParameterizedType) field.getGenericType();
                 Class<?> addElem = (Class<?>) addPt.getActualTypeArguments()[0];
-                if (addElem.isInterface() || Modifier.isAbstract(addElem.getModifiers())) {
-                    JsonSubTypes subTypesAnnotation = addElem.getAnnotation(JsonSubTypes.class);
-                    if (subTypesAnnotation != null && subTypesAnnotation.value().length > 0) {
-                        JsonSubTypes.Type[] types = subTypesAnnotation.value();
-                        String[] typeNames = new String[types.length];
-                        for (int i = 0; i < types.length; i++) {
-                            typeNames[i] = (types[i].name() != null && !types[i].name().isEmpty())
-                                    ? types[i].name()
-                                    : types[i].value().getSimpleName();
-                        }
-
-                        String selectedTypeName = (String) JOptionPane.showInputDialog(
-                                GenericObjectEditorPanel.this,
-                                "Select the type of " + addElem.getSimpleName() + " to add:",
-                                "Add Element",
-                                JOptionPane.PLAIN_MESSAGE,
-                                null,
-                                typeNames,
-                                typeNames[0]);
-
-                        if (selectedTypeName != null) {
-                            Class<?> selectedClass = null;
-                            for (JsonSubTypes.Type type : types) {
-                                String currentTypeName = (type.name() != null && !type.name().isEmpty())
-                                        ? type.name()
-                                        : type.value().getSimpleName();
-                                if (selectedTypeName.equals(currentTypeName)) {
-                                    selectedClass = type.value();
-                                    break;
-                                }
-                            }
-
-                            if (selectedClass != null) {
-                                Object inst = selectedClass.getDeclaredConstructor().newInstance();
-                                model.addElement(inst);
-                            }
-                        }
-                    } else {
-                        JOptionPane.showMessageDialog(GenericObjectEditorPanel.this,
-                                "Cannot add element for abstract/interface type: " + addElem.getSimpleName() + ". No subtypes defined.",
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                } else {
-                    Object inst = addElem.getDeclaredConstructor().newInstance();
-                    model.addElement(inst);
-                }
+                Object inst = instantiateSubtype(addElem);
+                if (inst != null) model.addElement(inst);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(GenericObjectEditorPanel.this,
                     "Error adding element: " + ex.getMessage(),
@@ -312,5 +265,45 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             e.printStackTrace();
         }
         return object;
+    }
+
+    // Helper to instantiate a subtype for interfaces/abstracts
+    private Object instantiateSubtype(Class<?> baseType) throws Exception {
+        if (baseType.isInterface() || Modifier.isAbstract(baseType.getModifiers())) {
+            JsonSubTypes stAnn = baseType.getAnnotation(JsonSubTypes.class);
+            if (stAnn == null || stAnn.value().length == 0) {
+                JOptionPane.showMessageDialog(this, "No subtypes available for " + baseType.getSimpleName(), "Error", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+            JsonSubTypes.Type[] types = stAnn.value();
+            String[] names = new String[types.length];
+            for (int i = 0; i < types.length; i++) {
+                names[i] = (types[i].name() != null && !types[i].name().isEmpty())
+                        ? types[i].name() : types[i].value().getSimpleName();
+            }
+            String sel = (String) JOptionPane.showInputDialog(
+                    this, "Select type of " + baseType.getSimpleName(),
+                    "Subtype", JOptionPane.PLAIN_MESSAGE,
+                    null, names, names[0]);
+            if (sel == null) return null;
+            for (JsonSubTypes.Type t : types) {
+                String tn = (t.name() != null && !t.name().isEmpty()) ? t.name() : t.value().getSimpleName();
+                if (sel.equals(tn)) {
+                    return t.value().getDeclaredConstructor().newInstance();
+                }
+            }
+            return null;
+        }
+        return baseType.getDeclaredConstructor().newInstance();
+    }
+
+    private Object instantiateFieldInstance(Field field) throws Exception {
+        // ensure parent object exists
+        if (object == null) {
+            object = clazz.getDeclaredConstructor().newInstance();
+        }
+        Object current = field.get(object);
+        if (current != null) return current;
+        return instantiateSubtype(field.getType());
     }
 }
