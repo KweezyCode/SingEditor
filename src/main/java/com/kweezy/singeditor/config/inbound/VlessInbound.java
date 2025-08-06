@@ -3,11 +3,9 @@ package com.kweezy.singeditor.config.inbound;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.kweezy.singeditor.config.common.*;
 import lombok.*;
-import com.kweezy.singeditor.config.common.ListenFields;
-import com.kweezy.singeditor.config.common.TlsConfig;
-import com.kweezy.singeditor.config.common.MultiplexConfig;
-import com.kweezy.singeditor.config.common.TransportConfig;
+
 import java.util.List;
 
 /** VLESS inbound configuration. */
@@ -18,7 +16,7 @@ public final class VlessInbound implements TypedInbound {
     private String tag;
 
     private List<VlessUser> users;
-    private TlsConfig tls;
+    private TlsInboundConfig tls;
     private MultiplexConfig multiplex;
     private TransportConfig transport;
 
