@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.kweezy.singeditor.config.common.DialFields;
 import com.kweezy.singeditor.config.common.MultiplexConfig;
 import com.kweezy.singeditor.config.common.TlsConfig;
+import com.kweezy.singeditor.config.common.TransportConfig;
 import lombok.*;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
@@ -18,8 +19,11 @@ public final class VlessOutbound implements TypedOutbound {
     @JsonProperty("server_port") private Integer serverPort;
     private String uuid;
     private String flow;
+    private String network;
+    @JsonProperty("packet_encoding") private String packetEncoding;
     private TlsConfig tls;
     private MultiplexConfig multiplex;
+    private TransportConfig transport;
     @JsonUnwrapped
     private DialFields dialFields;
 }
