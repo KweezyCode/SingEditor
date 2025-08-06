@@ -52,8 +52,8 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         } else if (java.util.List.class.isAssignableFrom(type)) {
             editor = createListEditor(field);
         } else {
-            JButton btn = new JButton("Edit...");
-            btn.addActionListener(e -> {
+            JButton editBtn = new JButton("Edit...");
+            editBtn.addActionListener(e -> {
                 Object sub;
                 try {
                     sub = instantiateFieldInstance(field);
@@ -81,7 +81,20 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                 dialog.setLocationRelativeTo(this);
                 dialog.setVisible(true);
             });
-            editor = btn;
+            JButton removeBtn = new JButton("Remove");
+            removeBtn.addActionListener(e -> {
+                try {
+                    if (object != null) {
+                        field.set(object, null);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+            JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+            btnPanel.add(editBtn);
+            btnPanel.add(removeBtn);
+            editor = btnPanel;
         }
         panel.add(editor);
         editors.add(editor);
