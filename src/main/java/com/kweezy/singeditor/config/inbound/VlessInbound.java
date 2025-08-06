@@ -17,9 +17,6 @@ public final class VlessInbound implements TypedInbound {
     private final String type = "vless";
     private String tag;
 
-    private String listen;
-    @JsonProperty("listen_port") private Integer listenPort;
-
     private List<VlessUser> users;
     private TlsConfig tls;
     private MultiplexConfig multiplex;

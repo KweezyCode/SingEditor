@@ -1,5 +1,6 @@
 package com.kweezy.singeditor.config.inbound;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -16,9 +17,80 @@ public final class TunInbound implements TypedInbound {
     private String tag;
 
     @JsonProperty("interface_name") private String interfaceName;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> address;
     private Integer mtu;
     @JsonProperty("auto_route") private Boolean autoRoute;
+
+    // Tun-specific fields since sing-box 1.10.0
+    @JsonProperty("iproute2_table_index") private Integer iproute2TableIndex;
+    @JsonProperty("iproute2_rule_index") private Integer iproute2RuleIndex;
+
+    @JsonProperty("auto_redirect") private Boolean autoRedirect;
+    @JsonProperty("auto_redirect_input_mark") private String autoRedirectInputMark;
+    @JsonProperty("auto_redirect_output_mark") private String autoRedirectOutputMark;
+
+    @JsonProperty("loopback_address")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> loopbackAddress;
+    @JsonProperty("strict_route") private Boolean strictRoute;
+
+    @JsonProperty("route_address")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> routeAddress;
+    @JsonProperty("route_exclude_address")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> routeExcludeAddress;
+    @JsonProperty("route_address_set")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> routeAddressSet;
+    @JsonProperty("route_exclude_address_set")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> routeExcludeAddressSet;
+
+    @JsonProperty("endpoint_independent_nat") private Boolean endpointIndependentNat;
+    @JsonProperty("udp_timeout") private String udpTimeout;
+    private String stack;
+
+    @JsonProperty("include_interface")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> includeInterface;
+    @JsonProperty("exclude_interface")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> excludeInterface;
+
+    @JsonProperty("include_uid")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<Integer> includeUid;
+    @JsonProperty("include_uid_range")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> includeUidRange;
+    @JsonProperty("exclude_uid")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<Integer> excludeUid;
+    @JsonProperty("exclude_uid_range")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> excludeUidRange;
+
+    @JsonProperty("include_android_user")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<Integer> includeAndroidUser;
+    @JsonProperty("include_package")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> includePackage;
+    @JsonProperty("exclude_package")
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> excludePackage;
+
+    // Deprecated fields
+    @Deprecated private Boolean gso;
+    @Deprecated @JsonProperty("inet4_address") private List<String> inet4Address;
+    @Deprecated @JsonProperty("inet6_address") private List<String> inet6Address;
+    @Deprecated @JsonProperty("inet4_route_address") private List<String> inet4RouteAddress;
+    @Deprecated @JsonProperty("inet6_route_address") private List<String> inet6RouteAddress;
+    @Deprecated @JsonProperty("inet4_route_exclude_address") private List<String> inet4RouteExcludeAddress;
+    @Deprecated @JsonProperty("inet6_route_exclude_address") private List<String> inet6RouteExcludeAddress;
+
     private PlatformConfig platform;
     @JsonUnwrapped
     private ListenFields listenFields;

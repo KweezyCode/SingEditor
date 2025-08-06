@@ -13,8 +13,6 @@ public final class SocksInbound implements TypedInbound {
     private final String type = "socks";
     private String tag;
 
-    private String listen;
-    @JsonProperty("listen_port") private Integer listenPort;
     private String network;             // tcp / udp
     private String username;
     private String password;

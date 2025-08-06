@@ -13,8 +13,6 @@ public final class TProxyInbound implements TypedInbound {
     private final String type = "tproxy";
     private String tag;
 
-    private String listen;
-    @JsonProperty("listen_port") private Integer listenPort;
     private String network;             // tcp / udp
     @JsonProperty("udp_over_tcp") private UdpOverTcp udpOverTcp;
     private Boolean transparent;
