@@ -7,6 +7,8 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
@@ -19,6 +21,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
     private T object;
     private final java.util.List<Field> fields = new java.util.ArrayList<>();
     private final java.util.List<JComponent> editors = new java.util.ArrayList<>();
+    private final Map<Field, Object> initialValues = new HashMap<>();
 
     public GenericObjectEditorPanel(Class<T> clazz) {
         this.clazz = clazz;
@@ -238,11 +241,13 @@ public class GenericObjectEditorPanel<T> extends JPanel {
 
     public void setObject(Object obj) {
         this.object = clazz.cast(obj);
+        initialValues.clear();
         for (int i = 0; i < fields.size(); i++) {
             Field f = fields.get(i);
             JComponent editor = editors.get(i);
             try {
                 Object val = f.get(obj);
+                initialValues.put(f, val);
                 if (editor instanceof JCheckBox cb) {
                     cb.setSelected(val != null && (Boolean) val);
                 } else if (editor instanceof JTextField tf) {
@@ -277,10 +282,18 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                     value = sp.getValue();
                 } else if (editor instanceof JTextField tf) {
                     String txt = tf.getText();
-                    if (f.getType() == String.class) value = txt;
-                    else if (f.getType() == int.class || f.getType() == Integer.class) value = Integer.parseInt(txt);
-                    else if (f.getType() == long.class || f.getType() == Long.class) value = Long.parseLong(txt);
-                    else if (f.getType() == double.class || f.getType() == Double.class) value = Double.parseDouble(txt);
+                    if (f.getType() == String.class) {
+                        Object orig = initialValues.get(f);
+                        if (!(orig == null && txt.isEmpty())) {
+                            value = txt;
+                        }
+                    } else if (f.getType() == int.class || f.getType() == Integer.class) {
+                        value = Integer.parseInt(txt);
+                    } else if (f.getType() == long.class || f.getType() == Long.class) {
+                        value = Long.parseLong(txt);
+                    } else if (f.getType() == double.class || f.getType() == Double.class) {
+                        value = Double.parseDouble(txt);
+                    }
                 } else if (editor instanceof JPanel listPanel && java.util.List.class.isAssignableFrom(f.getType())) {
                     JScrollPane sp = (JScrollPane) listPanel.getComponent(0);
                     JList<?> list = (JList<?>) sp.getViewport().getView();
