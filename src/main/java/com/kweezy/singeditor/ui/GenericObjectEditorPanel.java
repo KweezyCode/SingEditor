@@ -269,6 +269,10 @@ public class GenericObjectEditorPanel<T> extends JPanel {
 
     // Helper to instantiate a subtype for interfaces/abstracts
     private Object instantiateSubtype(Class<?> baseType) throws Exception {
+        // default placeholder for String elements
+        if (baseType == String.class) {
+            return "Your value here";
+        }
         if (baseType.isInterface() || Modifier.isAbstract(baseType.getModifiers())) {
             JsonSubTypes stAnn = baseType.getAnnotation(JsonSubTypes.class);
             if (stAnn == null || stAnn.value().length == 0) {
