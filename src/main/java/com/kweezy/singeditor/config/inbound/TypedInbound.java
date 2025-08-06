@@ -7,10 +7,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = TunInbound.class,   name = "tun"),
         @JsonSubTypes.Type(value = TProxyInbound.class, name = "tproxy"),
-        @JsonSubTypes.Type(value = SocksInbound.class, name = "socks")
+        @JsonSubTypes.Type(value = SocksInbound.class, name = "socks"),
+        @JsonSubTypes.Type(value = VlessInbound.class, name = "vless")
 })
 public sealed interface TypedInbound permits TunInbound,
         TProxyInbound,
-        SocksInbound {
+        SocksInbound,
+        VlessInbound {
     String getTag();
 }
