@@ -8,6 +8,12 @@ import lombok.*;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ListenFields {
+    @JsonProperty("listen")
+    private String listen;
+
+    @JsonProperty("listen_port")
+    private Integer listenPort;
+
     @JsonProperty("bind_interface")
     private String bindInterface;
 
