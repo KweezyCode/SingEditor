@@ -12,4 +12,14 @@ public class MultiplexConfig {
     private String  protocol;                   // smux | yamux
     @JsonProperty("max_connections")
     private Integer maxConnections;
+
+    @JsonProperty("min_streams")
+    private Integer minStreams;
+
+    @JsonProperty("max_streams")
+    private Integer maxStreams;
+
+    private Boolean padding;
+
+    private BrutalConfig brutal;
 }
