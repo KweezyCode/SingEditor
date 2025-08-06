@@ -17,7 +17,11 @@ public class RouteConfig {
     @Singular("ruleSet")
     private List<RuleSet> ruleSet;
 
-    private String  finalTag;
+    @JsonProperty("final")
+    private String finalTag;
+
+    @JsonProperty("find_process") // TODO: Undocumented feature, report it ASAP!!
+    private boolean findProcess;
 
     @JsonProperty("auto_detect_interface")
     private Boolean autoDetectInterface;
