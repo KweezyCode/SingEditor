@@ -4,6 +4,11 @@ SingEditor is a graphical configuration editor for [sing-box](https://github.com
 
 **⚠️ Alpha Stage:** This project is under active development. Bugs may exist and features are not fully implemented.
 
+<!-- Screenshot of the application UI -->
+![screenshot](gui.png)
+
+*Note: No time was spent on UI design, so it may look a bit strange.*
+
 ## Why SingEditor?
 
 Sing-box configuration files can become complex with nested objects, lists, and various protocol settings, and until now no GUI editor has offered a comprehensive solution.
@@ -30,7 +35,3 @@ Output JAR: `build/libs/SingEditor-1.0-SNAPSHOT.jar`
 ```bash
 java -cp build/libs/SingEditor-1.0-SNAPSHOT.jar com.kweezy.singeditor.MainGui
 ```
-
-1. **File → Open**: select a [sing-box](https://github.com/SagerNet/sing-box) JSON file
-2. Make changes in the GUI form
-3. **File → Save**: write updated configuration back to disk
