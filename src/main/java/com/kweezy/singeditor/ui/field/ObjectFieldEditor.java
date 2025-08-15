@@ -43,12 +43,16 @@ public class ObjectFieldEditor extends AbstractFieldEditor {
             sub.setObject(inst);
             JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent), fieldName, Dialog.ModalityType.APPLICATION_MODAL);
             dlg.getContentPane().add(new JScrollPane(sub), BorderLayout.CENTER);
-            JButton ok = new JButton("OK"); ok.addActionListener(ev -> { dlg.dispose(); });
-            dlg.getContentPane().add(ok, BorderLayout.SOUTH);
+            final boolean[] saved = { false };
+            JButton save = new JButton("Save");
+            save.addActionListener(ev -> { saved[0] = true; dlg.dispose(); });
+            dlg.getContentPane().add(save, BorderLayout.SOUTH);
             dlg.pack(); dlg.setLocationRelativeTo(parent); dlg.setVisible(true);
-            value = sub.getObject();
-            updateRemoveVisibility();
-            markDirty();
+            if (saved[0]) {
+                value = sub.getObject();
+                updateRemoveVisibility();
+                markDirty();
+            }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(parent, "Error editing object: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

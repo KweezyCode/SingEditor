@@ -76,14 +76,22 @@ public class ListFieldEditor extends AbstractFieldEditor {
                 sub.setObject(inst);
                 JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent), field.getName(), Dialog.ModalityType.APPLICATION_MODAL);
                 dlg.getContentPane().add(new JScrollPane(sub), BorderLayout.CENTER);
-                JButton ok = new JButton("OK"); ok.addActionListener(ev -> { dlg.dispose(); });
-                dlg.getContentPane().add(ok, BorderLayout.SOUTH);
+                final boolean[] saved = { false };
+                JButton save = new JButton("Save");
+                save.addActionListener(ev -> { saved[0] = true; dlg.dispose(); });
+                dlg.getContentPane().add(save, BorderLayout.SOUTH);
                 dlg.pack(); dlg.setLocationRelativeTo(parent); dlg.setVisible(true);
-                inst = sub.getObject();
+                if (saved[0]) {
+                    inst = sub.getObject();
+                    model.addElement(inst);
+                    updateListRows();
+                    markDirty();
+                }
+            } else {
+                model.addElement(inst);
+                updateListRows();
+                markDirty();
             }
-            model.addElement(inst);
-            updateListRows();
-            markDirty();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(parent, "Error adding element: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -109,12 +117,16 @@ public class ListFieldEditor extends AbstractFieldEditor {
             sub.setObject(item);
             JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent), field.getName(), Dialog.ModalityType.APPLICATION_MODAL);
             dlg.getContentPane().add(new JScrollPane(sub), BorderLayout.CENTER);
-            JButton ok = new JButton("OK"); ok.addActionListener(ev -> { dlg.dispose(); });
-            dlg.getContentPane().add(ok, BorderLayout.SOUTH);
+            final boolean[] saved = { false };
+            JButton save = new JButton("Save");
+            save.addActionListener(ev -> { saved[0] = true; dlg.dispose(); });
+            dlg.getContentPane().add(save, BorderLayout.SOUTH);
             dlg.pack(); dlg.setLocationRelativeTo(parent); dlg.setVisible(true);
-            model.set(sel, sub.getObject());
-            updateListRows();
-            markDirty();
+            if (saved[0]) {
+                model.set(sel, sub.getObject());
+                updateListRows();
+                markDirty();
+            }
         }
     }
 
