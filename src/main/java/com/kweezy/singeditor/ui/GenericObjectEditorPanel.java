@@ -22,6 +22,9 @@ public class GenericObjectEditorPanel<T> extends JPanel {
     private final java.util.List<Field> fields = new java.util.ArrayList<>();
     private final java.util.List<JComponent> editors = new java.util.ArrayList<>();
     private final Map<Field, Object> initialValues = new HashMap<>();
+    // Track which fields were actually modified by user
+    private final Map<Field, Boolean> dirtyFields = new HashMap<>();
+    private boolean updating = false;
 
     public GenericObjectEditorPanel(Class<T> clazz) {
         this.clazz = clazz;
@@ -33,6 +36,12 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         }
     }
 
+    private void markDirty(Field field) {
+        if (!updating) {
+            dirtyFields.put(field, Boolean.TRUE);
+        }
+    }
+
     private JComponent createFieldEditor(Field field) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel label = new JLabel(field.getName());
@@ -40,15 +49,29 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         Class<?> type = field.getType();
         JComponent editor;
         if (type == boolean.class || type == Boolean.class) {
-            editor = new JCheckBox();
+            JCheckBox cb = new JCheckBox();
+            cb.addActionListener(e -> markDirty(field));
+            editor = cb;
         } else if (type == String.class) {
-            editor = new JTextField(20);
+            JTextField tf = new JTextField(20);
+            tf.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                public void insertUpdate(javax.swing.event.DocumentEvent e) { markDirty(field); }
+                public void removeUpdate(javax.swing.event.DocumentEvent e) { markDirty(field); }
+                public void changedUpdate(javax.swing.event.DocumentEvent e) { markDirty(field); }
+            });
+            editor = tf;
         } else if (type == int.class || type == Integer.class) {
-            editor = new JSpinner(new SpinnerNumberModel(0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
+            JSpinner sp = new JSpinner(new SpinnerNumberModel(0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1));
+            sp.addChangeListener(e -> markDirty(field));
+            editor = sp;
         } else if (type == long.class || type == Long.class) {
-            editor = new JSpinner(new SpinnerNumberModel(0L, Long.MIN_VALUE, Long.MAX_VALUE, 1L));
+            JSpinner sp = new JSpinner(new SpinnerNumberModel(0L, Long.MIN_VALUE, Long.MAX_VALUE, 1L));
+            sp.addChangeListener(e -> markDirty(field));
+            editor = sp;
         } else if (type == double.class || type == Double.class) {
-            editor = new JSpinner(new SpinnerNumberModel(0.0, null, null, 0.1));
+            JSpinner sp = new JSpinner(new SpinnerNumberModel(0.0, null, null, 0.1));
+            sp.addChangeListener(e -> markDirty(field));
+            editor = sp;
         } else if (java.util.List.class.isAssignableFrom(type)) {
             editor = createListEditor(field);
         } else {
@@ -71,6 +94,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                     try {
                         Object newSub = subPanel.getObject();
                         field.set(object, newSub);
+                        markDirty(field);
                         dialog.dispose();
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -86,6 +110,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                 try {
                     if (object != null) {
                         field.set(object, null);
+                        markDirty(field);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -122,10 +147,12 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                             String input = JOptionPane.showInputDialog(GenericObjectEditorPanel.this,
                                 "Edit value:", item.toString());
                             if (input != null) {
-                                model.set(idx, item instanceof Integer ? Integer.parseInt(input)
+                                Object newVal = (item instanceof Integer ? Integer.parseInt(input)
                                     : item instanceof Long ? Long.parseLong(input)
                                     : item instanceof Double ? Double.parseDouble(input)
                                     : input);
+                                model.set(idx, newVal);
+                                markDirty(field);
                             }
                         } else {
                             // complex object: nested editor
@@ -139,6 +166,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                                 try {
                                     Object newItem = subPanel.getObject();
                                     model.set(idx, newItem);
+                                    markDirty(field);
                                     dialog.dispose();
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
@@ -176,6 +204,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                     try {
                         Object newItem = subPanel.getObject();
                         model.set(sel, newItem);
+                        markDirty(field);
                         dialog.dispose();
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -192,7 +221,10 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                 ParameterizedType addPt = (ParameterizedType) field.getGenericType();
                 Class<?> addElem = (Class<?>) addPt.getActualTypeArguments()[0];
                 Object inst = instantiateSubtype(addElem);
-                if (inst != null) model.addElement(inst);
+                if (inst != null) {
+                    model.addElement(inst);
+                    markDirty(field);
+                }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(GenericObjectEditorPanel.this,
                     "Error adding element: " + ex.getMessage(),
@@ -200,7 +232,11 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             }
         });
         remove.addActionListener(e -> {
-            int idx = list.getSelectedIndex(); if (idx >= 0) model.remove(idx);
+            int idx = list.getSelectedIndex();
+            if (idx >= 0) {
+                model.remove(idx);
+                markDirty(field);
+            }
         });
         return panel;
     }
@@ -208,12 +244,15 @@ public class GenericObjectEditorPanel<T> extends JPanel {
     public void setObject(Object obj) {
         this.object = clazz.cast(obj);
         initialValues.clear();
+        dirtyFields.clear();
+        updating = true;
         for (int i = 0; i < fields.size(); i++) {
             Field f = fields.get(i);
             JComponent editor = editors.get(i);
             try {
                 Object val = f.get(obj);
                 initialValues.put(f, val);
+                dirtyFields.put(f, Boolean.FALSE);
                 if (editor instanceof JCheckBox cb) {
                     cb.setSelected(val != null && (Boolean) val);
                 } else if (editor instanceof JTextField tf) {
@@ -233,6 +272,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                 e.printStackTrace();
             }
         }
+        updating = false;
     }
 
     public T getObject() {
@@ -241,24 +281,24 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             for (int i = 0; i < fields.size(); i++) {
                 Field f = fields.get(i);
                 JComponent editor = editors.get(i);
+                boolean dirty = Boolean.TRUE.equals(dirtyFields.get(f));
                 Object value = null;
                 if (editor instanceof JCheckBox cb) {
-                    value = cb.isSelected();
+                    if (dirty) value = cb.isSelected();
                 } else if (editor instanceof JSpinner sp) {
-                    value = sp.getValue();
+                    if (dirty) value = sp.getValue();
                 } else if (editor instanceof JTextField tf) {
                     String txt = tf.getText();
-                    if (f.getType() == String.class) {
-                        Object orig = initialValues.get(f);
-                        if (!(orig == null && txt.isEmpty())) {
-                            value = txt;
+                    if (dirty) {
+                        if (f.getType() == String.class) {
+                            value = txt.isEmpty() ? null : txt;
+                        } else if (f.getType() == int.class || f.getType() == Integer.class) {
+                            value = txt.isEmpty() ? null : Integer.parseInt(txt);
+                        } else if (f.getType() == long.class || f.getType() == Long.class) {
+                            value = txt.isEmpty() ? null : Long.parseLong(txt);
+                        } else if (f.getType() == double.class || f.getType() == Double.class) {
+                            value = txt.isEmpty() ? null : Double.parseDouble(txt);
                         }
-                    } else if (f.getType() == int.class || f.getType() == Integer.class) {
-                        value = Integer.parseInt(txt);
-                    } else if (f.getType() == long.class || f.getType() == Long.class) {
-                        value = Long.parseLong(txt);
-                    } else if (f.getType() == double.class || f.getType() == Double.class) {
-                        value = Double.parseDouble(txt);
                     }
                 } else if (editor instanceof JPanel listPanel && java.util.List.class.isAssignableFrom(f.getType())) {
                     JScrollPane sp = (JScrollPane) listPanel.getComponent(0);
@@ -268,10 +308,17 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                     for (int idx = 0; idx < model.getSize(); idx++) {
                         newList.add(model.getElementAt(idx));
                     }
-                    value = newList;
-                }
-                if (value != null) {
+                    // Empty lists should be saved as null
+                    value = newList.isEmpty() ? null : newList;
+                    // For lists, we always set (to ensure [] -> null as required)
                     f.set(object, value);
+                    continue;
+                }
+                if (value != null || (editor instanceof JCheckBox || editor instanceof JSpinner || editor instanceof JTextField)) {
+                    // Only apply for dirty simple fields; value may be null intentionally (e.g., empty text -> null)
+                    if (dirty) {
+                        f.set(object, value);
+                    }
                 }
             }
         } catch (Exception e) {
