@@ -17,8 +17,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
 
     // Jackson modules for java8 and parameter names
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.19.2")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.15.2")
 
     compileOnly("org.projectlombok:lombok:1.18.26")
