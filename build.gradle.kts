@@ -21,10 +21,10 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.2")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.15.2")
 
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
-    testCompileOnly("org.projectlombok:lombok:1.18.26")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    testCompileOnly("org.projectlombok:lombok:1.18.38")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
