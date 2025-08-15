@@ -10,13 +10,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = VlessOutbound.class,       name = "vless"),
         @JsonSubTypes.Type(value = ShadowsocksOutbound.class, name = "shadowsocks"),
         @JsonSubTypes.Type(value = DNSOutbound.class,         name = "dns"),
-        @JsonSubTypes.Type(value = HysteriaOutbound.class,    name = "hysteria2")
+        @JsonSubTypes.Type(value = Hysteria2Outbound.class,    name = "hysteria2")
 })
 public sealed interface TypedOutbound permits DirectOutbound,
         BlockOutbound,
         VlessOutbound,
         ShadowsocksOutbound,
         DNSOutbound,
-        HysteriaOutbound {
+        Hysteria2Outbound {
     String getTag();
 }

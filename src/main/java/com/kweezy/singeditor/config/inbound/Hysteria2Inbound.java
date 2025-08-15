@@ -1,44 +1,49 @@
-package com.kweezy.singeditor.config.outbound;
+package com.kweezy.singeditor.config.inbound;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.kweezy.singeditor.config.common.DialFields;
-import com.kweezy.singeditor.config.common.TlsOutboundConfig;
+import com.kweezy.singeditor.config.common.ListenFields;
+import com.kweezy.singeditor.config.common.TlsInboundConfig;
+import com.kweezy.singeditor.config.common.HysteriaMasqueradeConfig;
 import lombok.*;
 
 import java.util.List;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class HysteriaOutbound implements TypedOutbound {
+public final class Hysteria2Inbound implements TypedInbound {
     private final String type = "hysteria2";
     private String tag;
-
-    private String server;
-    @JsonProperty("server_port") private Integer serverPort;
-    @JsonProperty("server_ports") private List<String> serverPorts;
-    @JsonProperty("hop_interval") private String hopInterval;
 
     @JsonProperty("up_mbps") private Integer upMbps;
     @JsonProperty("down_mbps") private Integer downMbps;
 
     private ObfsConfig obfs;
 
-    private String password;
-    private String network;
+    private List<HysteriaUser> users;
 
-    private TlsOutboundConfig tls;
+    @JsonProperty("ignore_client_bandwidth") private Boolean ignoreClientBandwidth;
+
+    private TlsInboundConfig tls;
+
+    private HysteriaMasqueradeConfig masquerade;
 
     @JsonProperty("brutal_debug") private Boolean brutalDebug;
 
-    @JsonUnwrapped
-    private DialFields dialFields;
+    @JsonUnwrapped private ListenFields listenFields;
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ObfsConfig {
         private String type;
+        private String password;
+    }
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class HysteriaUser {
+        private String name;
         private String password;
     }
 }
