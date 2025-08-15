@@ -21,7 +21,7 @@ public class RouteConfig {
     private String finalTag;
 
     @JsonProperty("find_process") // TODO: Undocumented feature, report it ASAP!!
-    private boolean findProcess;
+    private Boolean findProcess;
 
     @JsonProperty("auto_detect_interface")
     private Boolean autoDetectInterface;
