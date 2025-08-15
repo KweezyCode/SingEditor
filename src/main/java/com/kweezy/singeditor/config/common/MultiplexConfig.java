@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-/** Общая секция multiplex в outbound-ах. */
+/** Common multiplex section for outbounds. */
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MultiplexConfig {
-    private Boolean enabled;                    // включить/выключить
+    private Boolean enabled;
     private String  protocol;                   // smux | yamux
     @JsonProperty("max_connections")
     private Integer maxConnections;

@@ -6,11 +6,11 @@ import lombok.*;
 
 import java.util.List;
 
-/** Платформенные опции для Tun inbound. */
+/** Platform options for Tun inbound. */
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PlatformConfig {
-    private Boolean netstack;                   // использовать userspace-стек
+    private Boolean netstack;                   // use userspace network stack
 
     @JsonProperty("http_proxy")
     private HttpProxyConfig httpProxy;

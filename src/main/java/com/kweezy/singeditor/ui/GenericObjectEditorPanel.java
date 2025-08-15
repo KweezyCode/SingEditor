@@ -22,7 +22,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
     public GenericObjectEditorPanel(Class<T> clazz) {
         this.clazz = clazz;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        // Подготовка: собрать поля и вычислить максимальную ширину лейбла
+        // Prepare: collect fields and compute maximum label width
         Field[] decl = clazz.getDeclaredFields();
         JLabel probe = new JLabel();
         for (Field f : decl) {
@@ -32,14 +32,14 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             Dimension d = probe.getPreferredSize();
             if (d.width > maxLabelWidth) maxLabelWidth = d.width;
         }
-        // Создание строк
+        // Create rows
         for (int i = 0; i < fields.size(); i++) {
             add(createRow(fields.get(i), i));
         }
     }
 
     private static Color zebra(Color base, int row) {
-        // легкое затемнение/осветление для чередования
+        // Slight darkening/lightening for zebra striping
         float factor = (row % 2 == 0) ? 1.0f : 0.96f;
         int r = Math.min(255, Math.round(base.getRed() * factor));
         int g = Math.min(255, Math.round(base.getGreen() * factor));
@@ -57,7 +57,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
 
         JLabel label = new JLabel(field.getName());
         Dimension pref = label.getPreferredSize();
-        // фиксированная ширина для всех лейблов
+        // Fixed width for all labels
         Dimension fixed = new Dimension(maxLabelWidth + 8, pref.height);
         label.setPreferredSize(fixed);
         label.setMinimumSize(fixed);
@@ -99,7 +99,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
                 Object value = fe.getValue();
                 boolean isList = java.util.List.class.isAssignableFrom(f.getType());
                 if (isList) {
-                    // Всегда применяем правило: пустые списки -> null
+                    // Always apply rule: empty lists -> null
                     try { f.set(out, value); } catch (Exception ignore) {}
                 } else if (fe.isDirty()) {
                     try { f.set(out, value); } catch (Exception ignore) {}
@@ -107,12 +107,12 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return object; // fallback: вернуть последний объект
+            return object; // fallback: return the last object
         }
         return out;
     }
 
-    // New: return current backing object (create if null) without recomputing from editors
+    // Return current backing object (create if null) without recomputing from editors
     public T getMutableObject() {
         try {
             if (object == null) {
