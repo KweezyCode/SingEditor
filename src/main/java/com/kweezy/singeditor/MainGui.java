@@ -5,6 +5,8 @@ import com.kweezy.singeditor.config.SingBoxConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
+import com.kweezy.singeditor.importer.ImportResult;
+import com.kweezy.singeditor.importer.ImportService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,15 +35,19 @@ public class MainGui extends JFrame {
 
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
+        JMenu importMenu = new JMenu("Import");
         JMenuItem openItem = new JMenuItem("Open");
         JMenuItem saveItem = new JMenuItem("Save");
         JMenuItem exitItem = new JMenuItem("Exit");
+        JMenuItem importVlessItem = new JMenuItem("VLESS URIs...");
 
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
+        importMenu.add(importVlessItem);
         menuBar.add(fileMenu);
+        menuBar.add(importMenu);
 
         setJMenuBar(menuBar);
         add(scrollPane, BorderLayout.CENTER);
@@ -50,6 +56,7 @@ public class MainGui extends JFrame {
         openItem.addActionListener(e -> openFile());
         saveItem.addActionListener(e -> saveFile());
         exitItem.addActionListener(e -> System.exit(0));
+        importVlessItem.addActionListener(e -> importVlessDialog());
     }
 
     private void openFile() {
@@ -80,6 +87,32 @@ public class MainGui extends JFrame {
                 JOptionPane.showMessageDialog(this, "Error parsing or saving file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private void importVlessDialog() {
+        JTextArea textArea = new JTextArea(15, 80);
+        JScrollPane sp = new JScrollPane(textArea);
+        int res = JOptionPane.showConfirmDialog(this, sp, "Paste VLESS URIs (one per line)", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (res != JOptionPane.OK_OPTION) return;
+        String input = textArea.getText();
+        if (input == null || input.trim().isEmpty()) return;
+
+        // Use ImportService to import any supported outbound lines (currently VLESS)
+        ImportService service = new ImportService();
+        SingBoxConfig cfg = editorPanel.getMutableObject();
+        ImportResult result = service.importText(input, cfg);
+
+        // Refresh editor view
+        editorPanel.setObject(cfg);
+        editorPanel.revalidate();
+        editorPanel.repaint();
+
+        String msg = "Imported: " + result.getImported() + (result.getFailed() > 0 ? ", failed: " + result.getFailed() : "");
+        if (result.getErrors() != null && !result.getErrors().isEmpty()) {
+            int show = Math.min(10, result.getErrors().size());
+            msg += "\n" + String.join("\n", result.getErrors().subList(0, show));
+        }
+        JOptionPane.showMessageDialog(this, msg, "Import", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static void main(String[] args) {

@@ -111,4 +111,16 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         }
         return out;
     }
+
+    // New: return current backing object (create if null) without recomputing from editors
+    public T getMutableObject() {
+        try {
+            if (object == null) {
+                object = clazz.getDeclaredConstructor().newInstance();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return object;
+    }
 }
