@@ -16,14 +16,15 @@ public class ListFieldEditor extends AbstractFieldEditor {
     private final JPanel panel = new JPanel(new BorderLayout());
     private final Field field;
     private final Component parent;
+    private final JScrollPane scroll;
 
     public ListFieldEditor(Field field, Component parent) {
         super(new JPanel(new BorderLayout()));
         this.field = field;
         this.parent = parent;
-        JScrollPane scroll = new JScrollPane(list);
+        this.scroll = new JScrollPane(list);
         list.setVisibleRowCount(5);
-        scroll.setPreferredSize(new Dimension(200, 100));
+
         ((JPanel) this.component).add(scroll, BorderLayout.CENTER);
 
         JPanel btns = new JPanel();
@@ -41,6 +42,21 @@ public class ListFieldEditor extends AbstractFieldEditor {
         edit.addActionListener(e -> editSelected());
         add.addActionListener(e -> onAdd());
         remove.addActionListener(e -> onRemove());
+
+        updateListRows();
+    }
+
+    private void updateListRows() {
+        int size = model.getSize();
+        int rows = Math.min(8, Math.max(1, size + 1)); // 0->1, 1->2, ..., cap at 8
+        list.setVisibleRowCount(rows);
+
+        Dimension d = list.getPreferredScrollableViewportSize();
+        int width = Math.max(100, Math.min(400, d.width));
+        scroll.setPreferredSize(new Dimension(width, d.height));
+        list.revalidate();
+        scroll.revalidate();
+        component.revalidate();
     }
 
     private Class<?> elementClass() {
@@ -66,6 +82,7 @@ public class ListFieldEditor extends AbstractFieldEditor {
                 inst = sub.getObject();
             }
             model.addElement(inst);
+            updateListRows();
             markDirty();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(parent, "Error adding element: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -84,6 +101,7 @@ public class ListFieldEditor extends AbstractFieldEditor {
                         : item instanceof Double ? Double.parseDouble(input)
                         : input);
                 model.set(sel, newVal);
+                updateListRows();
                 markDirty();
             }
         } else {
@@ -95,13 +113,18 @@ public class ListFieldEditor extends AbstractFieldEditor {
             dlg.getContentPane().add(ok, BorderLayout.SOUTH);
             dlg.pack(); dlg.setLocationRelativeTo(parent); dlg.setVisible(true);
             model.set(sel, sub.getObject());
+            updateListRows();
             markDirty();
         }
     }
 
     private void onRemove() {
         int idx = list.getSelectedIndex();
-        if (idx >= 0) { model.remove(idx); markDirty(); }
+        if (idx >= 0) {
+            model.remove(idx);
+            updateListRows();
+            markDirty();
+        }
     }
 
     @Override
@@ -111,6 +134,7 @@ public class ListFieldEditor extends AbstractFieldEditor {
             model.clear();
             if (value instanceof List<?> l) { for (Object e : l) model.addElement(e); }
         } finally { updating = false; }
+        updateListRows();
     }
 
     @Override
@@ -120,4 +144,3 @@ public class ListFieldEditor extends AbstractFieldEditor {
         return out.isEmpty() ? null : out;
     }
 }
-
