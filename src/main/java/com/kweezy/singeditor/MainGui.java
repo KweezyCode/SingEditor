@@ -29,6 +29,7 @@ public class MainGui extends JFrame {
         // Create generic editor panel for SingBoxConfig
         editorPanel = new GenericObjectEditorPanel<>(SingBoxConfig.class);
         JScrollPane scrollPane = new JScrollPane(editorPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");

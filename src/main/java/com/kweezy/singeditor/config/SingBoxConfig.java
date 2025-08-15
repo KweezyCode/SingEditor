@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import com.kweezy.singeditor.config.inbound.TypedInbound;
 import com.kweezy.singeditor.config.outbound.TypedOutbound;
+import com.kweezy.singeditor.config.endpoint.TypedEndpoint;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class SingBoxConfig {
     private NtpConfig ntp;
     private CertificateConfig certificate;
 
-    @Singular private List<Endpoint> endpoints;
+    @Singular private List<TypedEndpoint> endpoints;
 
     @Singular private List<TypedInbound>  inbounds;
     @Singular private List<TypedOutbound> outbounds;
