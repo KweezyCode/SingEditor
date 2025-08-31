@@ -6,6 +6,7 @@ import com.kweezy.singeditor.ui.field.FieldEditorFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -26,6 +27,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         Field[] decl = clazz.getDeclaredFields();
         JLabel probe = new JLabel();
         for (Field f : decl) {
+            if (Modifier.isStatic(f.getModifiers())) continue; // не редактируем static
             f.setAccessible(true);
             fields.add(f);
             probe.setText(f.getName());
@@ -92,19 +94,32 @@ public class GenericObjectEditorPanel<T> extends JPanel {
     public T getObject() {
         T out;
         try {
+            // 1. Создаём новый экземпляр
             out = clazz.getDeclaredConstructor().newInstance();
+            // 2. Копируем исходные значения (если есть исходный объект)
+            if (object != null) {
+                for (Field f : fields) {
+                    try {
+                        Object originalVal = f.get(object);
+                        f.set(out, originalVal);
+                    } catch (Exception ignore) {}
+                }
+            }
+            // 3. Применяем изменения из редакторов
             for (Field f : fields) {
                 FieldEditor fe = editors.get(f);
                 if (fe == null) continue;
                 Object value = fe.getValue();
                 boolean isList = java.util.List.class.isAssignableFrom(f.getType());
                 if (isList) {
-                    // Always apply rule: empty lists -> null
+                    // Всегда устанавливаем (логика: пустой список -> null внутри FieldEditor, если так реализовано)
                     try { f.set(out, value); } catch (Exception ignore) {}
                 } else if (fe.isDirty()) {
                     try { f.set(out, value); } catch (Exception ignore) {}
                 }
             }
+            // 4. Обновляем текущий объект ссылкой на новую версию
+            object = out;
         } catch (Exception e) {
             e.printStackTrace();
             return object; // fallback: return the last object
