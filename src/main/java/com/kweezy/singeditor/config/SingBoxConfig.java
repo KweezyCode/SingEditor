@@ -1,6 +1,7 @@
 package com.kweezy.singeditor.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.kweezy.singeditor.config.experimental.ExperimentalConfig;
 import lombok.*;
 import com.kweezy.singeditor.config.inbound.TypedInbound;
 import com.kweezy.singeditor.config.outbound.TypedOutbound;
