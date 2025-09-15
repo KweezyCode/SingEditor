@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
 import com.kweezy.singeditor.importer.ImportResult;
 import com.kweezy.singeditor.importer.ImportService;
+import com.kweezy.singeditor.ui.util.ScrollUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +36,7 @@ public class MainGui extends JFrame {
         // Create generic editor panel for SingBoxConfig
         editorPanel = new GenericObjectEditorPanel<>(SingBoxConfig.class);
         JScrollPane scrollPane = new JScrollPane(editorPanel);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        ScrollUtil.configureScrollPane(scrollPane);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
@@ -96,6 +97,7 @@ public class MainGui extends JFrame {
     private void importVlessDialog() {
         JTextArea textArea = new JTextArea(15, 80);
         JScrollPane sp = new JScrollPane(textArea);
+        ScrollUtil.configureScrollPane(sp);
         int res = JOptionPane.showConfirmDialog(this, sp, "Paste VLESS URIs (one per line)", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (res != JOptionPane.OK_OPTION) return;
         String input = textArea.getText();

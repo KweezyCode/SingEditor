@@ -2,6 +2,7 @@ package com.kweezy.singeditor.ui.field;
 
 import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
 import com.kweezy.singeditor.ui.util.SubtypeFactory;
+import com.kweezy.singeditor.ui.util.ScrollUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,7 +43,9 @@ public class ObjectFieldEditor extends AbstractFieldEditor {
             GenericObjectEditorPanel<?> sub = new GenericObjectEditorPanel<>(inst.getClass());
             sub.setObject(inst);
             JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent), fieldName, Dialog.ModalityType.APPLICATION_MODAL);
-            dlg.getContentPane().add(new JScrollPane(sub), BorderLayout.CENTER);
+            JScrollPane sp = new JScrollPane(sub);
+            ScrollUtil.configureScrollPane(sp);
+            dlg.getContentPane().add(sp, BorderLayout.CENTER);
             final boolean[] saved = { false };
             JButton save = new JButton("Save");
             save.addActionListener(ev -> { saved[0] = true; dlg.dispose(); });

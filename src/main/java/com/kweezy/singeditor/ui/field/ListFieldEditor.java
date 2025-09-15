@@ -2,6 +2,7 @@ package com.kweezy.singeditor.ui.field;
 
 import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
 import com.kweezy.singeditor.ui.util.SubtypeFactory;
+import com.kweezy.singeditor.ui.util.ScrollUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,7 @@ public class ListFieldEditor extends AbstractFieldEditor {
         this.field = field;
         this.parent = parent;
         this.scroll = new JScrollPane(list);
+        ScrollUtil.configureScrollPane(this.scroll);
         list.setVisibleRowCount(5);
 
         ((JPanel) this.component).add(scroll, BorderLayout.CENTER);
@@ -75,7 +77,9 @@ public class ListFieldEditor extends AbstractFieldEditor {
                 GenericObjectEditorPanel<?> sub = new GenericObjectEditorPanel<>(inst.getClass());
                 sub.setObject(inst);
                 JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent), field.getName(), Dialog.ModalityType.APPLICATION_MODAL);
-                dlg.getContentPane().add(new JScrollPane(sub), BorderLayout.CENTER);
+                JScrollPane sp = new JScrollPane(sub);
+                ScrollUtil.configureScrollPane(sp);
+                dlg.getContentPane().add(sp, BorderLayout.CENTER);
                 final boolean[] saved = { false };
                 JButton save = new JButton("Save");
                 save.addActionListener(ev -> { saved[0] = true; dlg.dispose(); });
@@ -116,7 +120,9 @@ public class ListFieldEditor extends AbstractFieldEditor {
             GenericObjectEditorPanel<?> sub = new GenericObjectEditorPanel<>(item.getClass());
             sub.setObject(item);
             JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent), field.getName(), Dialog.ModalityType.APPLICATION_MODAL);
-            dlg.getContentPane().add(new JScrollPane(sub), BorderLayout.CENTER);
+            JScrollPane sp = new JScrollPane(sub);
+            ScrollUtil.configureScrollPane(sp);
+            dlg.getContentPane().add(sp, BorderLayout.CENTER);
             final boolean[] saved = { false };
             JButton save = new JButton("Save");
             save.addActionListener(ev -> { saved[0] = true; dlg.dispose(); });
