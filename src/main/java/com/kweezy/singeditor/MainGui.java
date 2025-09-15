@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.kweezy.singeditor.config.SingBoxConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
 import com.kweezy.singeditor.importer.ImportResult;
 import com.kweezy.singeditor.importer.ImportService;
@@ -26,6 +27,9 @@ public class MainGui extends JFrame {
 
         // Setup ObjectMapper
         objectMapper = new ObjectMapper();
+
+        // Accept single value as array globally (@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY))
+        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         // Create generic editor panel for SingBoxConfig
