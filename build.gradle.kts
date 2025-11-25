@@ -12,9 +12,9 @@ repositories {
 
 dependencies {
     implementation("com.formdev:flatlaf:3.6.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.1")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.20")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.20.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.20.1")
 
     // Jackson modules for java8 and parameter names
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
