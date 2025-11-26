@@ -19,7 +19,7 @@ dependencies {
     // Jackson modules for java8 and parameter names
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.20.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.20.1")
 
     compileOnly("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
