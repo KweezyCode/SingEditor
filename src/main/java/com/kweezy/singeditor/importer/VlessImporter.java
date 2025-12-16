@@ -71,13 +71,6 @@ public class VlessImporter implements OutboundImporter {
             tls.setEnabled(true);
             String sni = params.get("sni");
             if (sni != null && !sni.isEmpty()) tls.setServerName(sni);
-            String fp = params.get("fp");
-            if (fp != null && !fp.isEmpty()) {
-                TlsOutboundConfig.UtlsConfig utls = new TlsOutboundConfig.UtlsConfig();
-                utls.setEnabled(true);
-                utls.setFingerprint(fp);
-                tls.setUtls(utls);
-            }
             if (security.equalsIgnoreCase("reality")) {
                 TlsOutboundConfig.RealityConfigOutbound reality = new TlsOutboundConfig.RealityConfigOutbound();
                 reality.setEnabled(true);
@@ -86,6 +79,17 @@ public class VlessImporter implements OutboundImporter {
                 String sid = params.getOrDefault("sid", params.get("short_id"));
                 if (sid != null) reality.setShortId(sid);
                 tls.setReality(reality);
+
+                TlsOutboundConfig.UtlsConfig utls = new TlsOutboundConfig.UtlsConfig();
+                utls.setEnabled(true);
+                tls.setUtls(utls);
+                String fp = params.get("fp");
+                if (fp != null && !fp.isEmpty()) {
+                    utls.setFingerprint(fp);
+                }
+                else {
+                    utls.setFingerprint("random");
+                }
             }
             ob.setTls(tls);
         }
