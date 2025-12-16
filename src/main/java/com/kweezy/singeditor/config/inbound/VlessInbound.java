@@ -17,7 +17,7 @@ public final class VlessInbound implements TypedInbound {
 
     private List<VlessUser> users;
     private TlsInboundConfig tls;
-    private MultiplexConfig multiplex;
+    private MultiplexInboundConfig multiplex;
     private TransportConfig transport;
 
     @JsonUnwrapped

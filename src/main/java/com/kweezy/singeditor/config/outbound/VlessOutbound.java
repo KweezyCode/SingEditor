@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.kweezy.singeditor.config.common.DialFields;
-import com.kweezy.singeditor.config.common.MultiplexConfig;
+import com.kweezy.singeditor.config.common.MultiplexOutboundConfig;
 import com.kweezy.singeditor.config.common.TlsOutboundConfig;
 import com.kweezy.singeditor.config.common.TransportConfig;
 import lombok.*;
@@ -22,7 +22,7 @@ public final class VlessOutbound implements TypedOutbound {
     private String network;
     @JsonProperty("packet_encoding") private String packetEncoding;
     private TlsOutboundConfig tls;
-    private MultiplexConfig multiplex;
+    private MultiplexOutboundConfig multiplex;
     private TransportConfig transport;
     @JsonUnwrapped
     private DialFields dialFields;

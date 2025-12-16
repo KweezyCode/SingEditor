@@ -3,7 +3,7 @@ package com.kweezy.singeditor.config.inbound;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.kweezy.singeditor.config.common.ListenFields;
-import com.kweezy.singeditor.config.common.MultiplexConfig;
+import com.kweezy.singeditor.config.common.MultiplexInboundConfig;
 import lombok.*;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public final class ShadowsocksInbound implements TypedInbound {
     private String password;
     private List<ShadowsocksUser> users;
     private List<ShadowsocksDestination> destinations;
-    private MultiplexConfig multiplex;
+    private MultiplexInboundConfig multiplex;
 
     @JsonUnwrapped
     private ListenFields listenFields;
