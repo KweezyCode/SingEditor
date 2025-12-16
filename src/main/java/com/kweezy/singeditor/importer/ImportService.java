@@ -11,6 +11,7 @@ public class ImportService {
     public ImportService() {
         // register default importers
         importers.add(new VlessImporter());
+        importers.add(new ShadowsocksImporter());
     }
 
     public ImportResult importText(String text, SingBoxConfig cfg) {
@@ -32,13 +33,10 @@ public class ImportService {
                 Optional<TypedOutbound> parsed = importer.get().parse(line);
                 if (parsed.isEmpty()) { failed++; errors.add("Parse error: " + line); continue; }
                 TypedOutbound outbound = parsed.get();
-                // ensure alnum tag
-                String tag = sanitizeTag(getTag(outbound));
-                if (tag == null || tag.isEmpty()) {
-                    tag = nextProxyTag(existingTags);
-                } else {
-                    tag = uniqueTag(tag, existingTags);
-                }
+                
+                // Always use sequential numbering: proxyN
+                String tag = nextProxyTag(existingTags);
+                
                 setTag(outbound, tag);
                 existingTags.add(tag);
                 cfg.getOutbounds().add(outbound);

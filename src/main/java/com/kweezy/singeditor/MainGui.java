@@ -43,7 +43,7 @@ public class MainGui extends JFrame {
         JMenuItem openItem = new JMenuItem("Open");
         JMenuItem saveItem = new JMenuItem("Save");
         JMenuItem exitItem = new JMenuItem("Exit");
-        JMenuItem importVlessItem = new JMenuItem("VLESS URIs...");
+        JMenuItem importVlessItem = new JMenuItem("URIs...");
 
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
@@ -97,7 +97,7 @@ public class MainGui extends JFrame {
         JTextArea textArea = new JTextArea(15, 80);
         JScrollPane sp = new JScrollPane(textArea);
         ScrollUtil.configureScrollPane(sp);
-        int res = JOptionPane.showConfirmDialog(this, sp, "Paste VLESS URIs (one per line)", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        int res = JOptionPane.showConfirmDialog(this, sp, "Paste URIs (one per line)", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (res != JOptionPane.OK_OPTION) return;
         String input = textArea.getText();
         if (input == null || input.trim().isEmpty()) return;
