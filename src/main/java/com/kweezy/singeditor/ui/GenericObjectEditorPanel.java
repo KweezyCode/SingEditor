@@ -30,7 +30,7 @@ public class GenericObjectEditorPanel<T> extends JPanel {
             if (Modifier.isStatic(f.getModifiers())) continue; // не редактируем static
             f.setAccessible(true);
             fields.add(f);
-            probe.setText(f.getName());
+            probe.setText(prettify(f.getName()));
             Dimension d = probe.getPreferredSize();
             if (d.width > maxLabelWidth) maxLabelWidth = d.width;
         }
@@ -49,30 +49,74 @@ public class GenericObjectEditorPanel<T> extends JPanel {
         return new Color(r, g, b);
     }
 
+    private String prettify(String name) {
+        if (name == null || name.isEmpty()) return name;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (i == 0) {
+                sb.append(Character.toUpperCase(c));
+            } else {
+                if (Character.isUpperCase(c)) {
+                    sb.append(' ');
+                }
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     private JComponent createRow(Field field, int rowIndex) {
-        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        JPanel row = new JPanel(new BorderLayout(10, 0));
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         Color base = UIManager.getColor("Panel.background");
         if (base == null) base = row.getBackground();
         row.setBackground(zebra(base, rowIndex));
         row.setOpaque(true);
 
-        JLabel label = new JLabel(field.getName());
-        Dimension pref = label.getPreferredSize();
+        JLabel label = new JLabel(prettify(field.getName()));
         // Fixed width for all labels
-        Dimension fixed = new Dimension(maxLabelWidth + 8, pref.height);
+        Dimension fixed = new Dimension(maxLabelWidth + 8, 24);
         label.setPreferredSize(fixed);
         label.setMinimumSize(fixed);
-        label.setMaximumSize(fixed);
+        
+        // Wrap label in a panel to align it to the top
+        JPanel labelPanel = new JPanel(new BorderLayout());
+        labelPanel.setOpaque(false);
+        labelPanel.add(label, BorderLayout.NORTH);
 
         FieldEditor fe = FieldEditorFactory.create(field, this);
 
-        row.add(label);
-        row.add(fe.getComponent());
-        row.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+        JComponent editorComp = fe.getComponent();
+
+        boolean expandable = isExpandableEditor(fe, editorComp);
+        if (!expandable) {
+            // Prevent vertical stretching for simple controls
+            Dimension editorPref = editorComp.getPreferredSize();
+            editorComp.setMaximumSize(new Dimension(Integer.MAX_VALUE, editorPref.height));
+        }
+
+        row.add(labelPanel, BorderLayout.WEST);
+        row.add(editorComp, BorderLayout.CENTER);
+        row.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+
+        if (!expandable) {
+            // Cap row height for simple controls; let expandable editors grow naturally
+            Dimension rowPref = row.getPreferredSize();
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, rowPref.height));
+        }
 
         editors.put(field, fe);
         return row;
+    }
+
+    // Some editors (object editors, lists) must be allowed to expand vertically.
+    private boolean isExpandableEditor(FieldEditor fe, JComponent comp) {
+        String name = fe.getClass().getSimpleName();
+        if (comp instanceof JScrollPane) return true; // list/object dialogs often wrapped
+        if ("ObjectFieldEditor".equals(name)) return true;
+        if ("ListFieldEditor".equals(name)) return true;
+        return false;
     }
 
     public void setObject(Object obj) {

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
 import com.kweezy.singeditor.importer.ImportResult;
 import com.kweezy.singeditor.importer.ImportService;
+import com.kweezy.singeditor.ui.SingBoxConfigEditorPanel;
 import com.kweezy.singeditor.ui.util.ScrollUtil;
 
 import javax.swing.*;
@@ -18,11 +19,11 @@ import java.io.IOException;
 public class MainGui extends JFrame {
 
     private final ObjectMapper objectMapper;
-    private final GenericObjectEditorPanel<SingBoxConfig> editorPanel;
+    private final SingBoxConfigEditorPanel editorPanel;
 
     public MainGui() {
         setTitle("Sing Editor");
-        setSize(800, 600);
+        setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -33,11 +34,9 @@ public class MainGui extends JFrame {
         objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        // Create generic editor panel for SingBoxConfig
-        editorPanel = new GenericObjectEditorPanel<>(SingBoxConfig.class);
-        JScrollPane scrollPane = new JScrollPane(editorPanel);
-        ScrollUtil.configureScrollPane(scrollPane);
-
+        // Create specialized editor panel for SingBoxConfig
+        editorPanel = new SingBoxConfigEditorPanel();
+        
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         JMenu importMenu = new JMenu("Import");
@@ -55,7 +54,7 @@ public class MainGui extends JFrame {
         menuBar.add(importMenu);
 
         setJMenuBar(menuBar);
-        add(scrollPane, BorderLayout.CENTER);
+        add(editorPanel, BorderLayout.CENTER);
 
         // Add action listeners
         openItem.addActionListener(e -> openFile());
@@ -71,7 +70,7 @@ public class MainGui extends JFrame {
             try {
                 // Load JSON into object and update editor
                 SingBoxConfig config = objectMapper.readValue(file, SingBoxConfig.class);
-                editorPanel.setObject(config);
+                editorPanel.setConfig(config);
                 editorPanel.revalidate();
                 editorPanel.repaint();
             } catch (IOException e) {
@@ -86,7 +85,7 @@ public class MainGui extends JFrame {
             File file = fileChooser.getSelectedFile();
             try {
                 // Get updated object from editor and save as JSON
-                SingBoxConfig updated = editorPanel.getObject();
+                SingBoxConfig updated = editorPanel.getConfig();
                 objectMapper.writeValue(file, updated);
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error parsing or saving file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -105,11 +104,11 @@ public class MainGui extends JFrame {
 
         // Use ImportService to import any supported outbound lines (currently VLESS)
         ImportService service = new ImportService();
-        SingBoxConfig cfg = editorPanel.getMutableObject();
+        SingBoxConfig cfg = editorPanel.getConfig();
         ImportResult result = service.importText(input, cfg);
 
         // Refresh editor view
-        editorPanel.setObject(cfg);
+        editorPanel.setConfig(cfg);
         editorPanel.revalidate();
         editorPanel.repaint();
 

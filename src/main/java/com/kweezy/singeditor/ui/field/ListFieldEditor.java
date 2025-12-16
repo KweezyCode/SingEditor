@@ -6,6 +6,8 @@ import com.kweezy.singeditor.ui.util.ScrollUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -26,26 +28,67 @@ public class ListFieldEditor extends AbstractFieldEditor {
         this.scroll = new JScrollPane(list);
         ScrollUtil.configureScrollPane(this.scroll);
         list.setVisibleRowCount(5);
+        // make list items visually consistent and render empty values
+        list.setFixedCellHeight(26);
+        list.setCellRenderer(new EmptyAwareRenderer());
 
         ((JPanel) this.component).add(scroll, BorderLayout.CENTER);
 
-        JPanel btns = new JPanel();
-        JButton add = new JButton("Add");
-        JButton edit = new JButton("Edit");
-        JButton remove = new JButton("Remove");
-        btns.add(add); btns.add(edit); btns.add(remove);
-        ((JPanel) this.component).add(btns, BorderLayout.EAST);
+        JToolBar toolbar = new JToolBar();
+        toolbar.setFloatable(false);
+        toolbar.setOrientation(JToolBar.VERTICAL);
+        
+        JButton addBtn = new JButton("+");
+        JButton removeBtn = new JButton("-");
+        JButton upBtn = new JButton("↑");
+        JButton downBtn = new JButton("↓");
+        
+        Dimension btnSize = new Dimension(24, 24);
+        for (JButton b : new JButton[]{addBtn, removeBtn, upBtn, downBtn}) {
+            b.setPreferredSize(btnSize);
+            b.setMinimumSize(btnSize);
+            b.setMaximumSize(btnSize);
+            b.setMargin(new Insets(0,0,0,0));
+        }
+
+        toolbar.add(addBtn);
+        toolbar.add(removeBtn);
+        toolbar.addSeparator();
+        toolbar.add(upBtn);
+        toolbar.add(downBtn);
+        
+        ((JPanel) this.component).add(toolbar, BorderLayout.EAST);
 
         list.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2) editSelected();
             }
         });
-        edit.addActionListener(e -> editSelected());
-        add.addActionListener(e -> onAdd());
-        remove.addActionListener(e -> onRemove());
+
+        // Delete key support when list has focus
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
+        list.getActionMap().put("delete", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) { onRemove(); }
+        });
+
+        addBtn.addActionListener(e -> onAdd());
+        removeBtn.addActionListener(e -> onRemove());
+        upBtn.addActionListener(e -> onMove(-1));
+        downBtn.addActionListener(e -> onMove(1));
 
         updateListRows();
+    }
+
+    private void onMove(int delta) {
+        int idx = list.getSelectedIndex();
+        if (idx == -1) return;
+        int newIdx = idx + delta;
+        if (newIdx < 0 || newIdx >= model.getSize()) return;
+        
+        Object item = model.remove(idx);
+        model.add(newIdx, item);
+        list.setSelectedIndex(newIdx);
+        markDirty();
     }
 
     private void updateListRows() {
@@ -73,6 +116,35 @@ public class ListFieldEditor extends AbstractFieldEditor {
             Class<?> elem = elementClass();
             Object inst = SubtypeFactory.instantiateSubtype(elem, parent);
             if (inst == null) return;
+            if (inst instanceof String) {
+                // Prompt user for string value instead of inserting empty string silently
+                String input = JOptionPane.showInputDialog(parent, "Value:", "", JOptionPane.PLAIN_MESSAGE);
+                if (input == null) return; // cancelled
+                if (input.length() == 0) {
+                    JOptionPane.showMessageDialog(parent, "Empty value was not added.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                model.addElement(input);
+                updateListRows();
+                markDirty();
+                return;
+            }
+            if (inst instanceof Number) {
+                String input = JOptionPane.showInputDialog(parent, "Value:", inst.toString());
+                if (input == null) return;
+                try {
+                    Number n;
+                    if (inst instanceof Integer) n = Integer.parseInt(input);
+                    else if (inst instanceof Long) n = Long.parseLong(input);
+                    else n = Double.parseDouble(input);
+                    model.addElement(n);
+                    updateListRows();
+                    markDirty();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(parent, "Invalid number", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                return;
+            }
             if (!(inst instanceof String) && !(inst instanceof Number)) {
                 GenericObjectEditorPanel<?> sub = new GenericObjectEditorPanel<>(inst.getClass());
                 sub.setObject(inst);
@@ -160,5 +232,25 @@ public class ListFieldEditor extends AbstractFieldEditor {
         List<Object> out = new ArrayList<>();
         for (int i = 0; i < model.getSize(); i++) out.add(model.getElementAt(i));
         return out.isEmpty() ? null : out;
+    }
+
+    // Renderer that shows a placeholder for empty strings or nulls and keeps visuals consistent
+    private class EmptyAwareRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value == null) {
+                lbl.setText("<empty>");
+                lbl.setFont(lbl.getFont().deriveFont(Font.ITALIC));
+                lbl.setForeground(Color.GRAY);
+            } else if (value instanceof String && ((String) value).length() == 0) {
+                lbl.setText("<empty>");
+                lbl.setFont(lbl.getFont().deriveFont(Font.ITALIC));
+                lbl.setForeground(Color.GRAY);
+            } else {
+                lbl.setForeground(isSelected ? lbl.getForeground() : Color.BLACK);
+            }
+            return lbl;
+        }
     }
 }
