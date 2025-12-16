@@ -110,6 +110,21 @@ public class ObjectFieldEditor extends AbstractFieldEditor {
         inlineEditor = new GenericObjectEditorPanel<>(value.getClass());
         inlineEditor.setObject(value);
         contentPanel.add(inlineEditor, BorderLayout.CENTER);
+
+        // Footer with Save button to persist changes made in the inline editor
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        JButton saveBtn = new JButton("Save");
+        footer.add(saveBtn);
+        contentPanel.add(footer, BorderLayout.SOUTH);
+
+        saveBtn.addActionListener(e -> {
+            if (inlineEditor != null) {
+                Object updated = inlineEditor.getObject();
+                value = updated;
+                markDirty();
+                updateState();
+            }
+        });
         contentPanel.revalidate();
     }
 

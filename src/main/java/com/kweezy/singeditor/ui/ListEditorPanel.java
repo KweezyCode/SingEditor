@@ -170,6 +170,23 @@ public class ListEditorPanel<T> extends JPanel {
             JScrollPane sp = new JScrollPane(currentEditor);
             ScrollUtil.configureScrollPane(sp);
             detailContainer.add(sp, BorderLayout.CENTER);
+
+            // Footer with Save button so users can persist changes made in the detail editor
+            JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton saveBtn = new JButton("Save");
+            footer.add(saveBtn);
+            detailContainer.add(footer, BorderLayout.SOUTH);
+
+            saveBtn.addActionListener(e -> {
+                int idx = list.getSelectedIndex();
+                if (idx != -1 && currentEditor != null) {
+                    T updated = currentEditor.getObject();
+                    listModel.set(idx, updated);
+                    list.repaint();
+                    detailContainer.revalidate();
+                    detailContainer.repaint();
+                }
+            });
         } else {
             detailContainer.add(new JLabel("Select an item to edit", SwingConstants.CENTER), BorderLayout.CENTER);
         }
