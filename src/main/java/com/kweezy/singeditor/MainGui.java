@@ -1,25 +1,25 @@
 package com.kweezy.singeditor;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.kweezy.singeditor.app.ConfigFileService;
+import com.kweezy.singeditor.app.FileDialogService;
+import com.kweezy.singeditor.app.ImportDialogService;
+import com.kweezy.singeditor.app.Result;
 import com.kweezy.singeditor.config.SingBoxConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.kweezy.singeditor.ui.GenericObjectEditorPanel;
 import com.kweezy.singeditor.importer.ImportResult;
 import com.kweezy.singeditor.importer.ImportService;
 import com.kweezy.singeditor.ui.SingBoxConfigEditorPanel;
-import com.kweezy.singeditor.ui.util.ScrollUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.util.Optional;
 
 public class MainGui extends JFrame {
-
-    private final ObjectMapper objectMapper;
     private final SingBoxConfigEditorPanel editorPanel;
+    private final ConfigFileService configFileService;
+    private final FileDialogService fileDialogService;
+    private final ImportDialogService importDialogService;
+    private final ImportService importService;
 
     public MainGui() {
         setTitle("Sing Editor");
@@ -27,15 +27,12 @@ public class MainGui extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Setup ObjectMapper
-        objectMapper = new ObjectMapper();
-
-        // Accept single value as array globally (@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY))
-        objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
         // Create specialized editor panel for SingBoxConfig
         editorPanel = new SingBoxConfigEditorPanel();
+        configFileService = ConfigFileService.defaultService();
+        fileDialogService = new FileDialogService();
+        importDialogService = new ImportDialogService();
+        importService = ImportService.defaultService();
         
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
@@ -64,53 +61,28 @@ public class MainGui extends JFrame {
     }
 
     private void openFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                // Load JSON into object and update editor
-                SingBoxConfig config = objectMapper.readValue(file, SingBoxConfig.class);
-                editorPanel.setConfig(config);
-                editorPanel.revalidate();
-                editorPanel.repaint();
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error reading or parsing file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        fileDialogService.chooseOpenFile(this).ifPresent(file -> {
+            Result<SingBoxConfig> result = configFileService.load(file);
+            result.ifOk(this::refreshEditor)
+                  .ifError(msg -> showError("Error", msg));
+        });
     }
 
     private void saveFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                // Get updated object from editor and save as JSON
-                SingBoxConfig updated = editorPanel.getConfig();
-                objectMapper.writeValue(file, updated);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error parsing or saving file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        fileDialogService.chooseSaveFile(this).ifPresent(file -> {
+            SingBoxConfig updated = editorPanel.getConfig();
+            configFileService.save(file, updated)
+                    .ifError(msg -> showError("Error", msg));
+        });
     }
 
     private void importVlessDialog() {
-        JTextArea textArea = new JTextArea(15, 80);
-        JScrollPane sp = new JScrollPane(textArea);
-        ScrollUtil.configureScrollPane(sp);
-        int res = JOptionPane.showConfirmDialog(this, sp, "Paste URIs (one per line)", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (res != JOptionPane.OK_OPTION) return;
-        String input = textArea.getText();
-        if (input == null || input.trim().isEmpty()) return;
+        Optional<String> input = importDialogService.promptImportText(this);
+        if (input.isEmpty()) return;
 
-        // Use ImportService to import any supported outbound lines (currently VLESS)
-        ImportService service = new ImportService();
         SingBoxConfig cfg = editorPanel.getConfig();
-        ImportResult result = service.importText(input, cfg);
-
-        // Refresh editor view
-        editorPanel.setConfig(cfg);
-        editorPanel.revalidate();
-        editorPanel.repaint();
+        ImportResult result = importService.importText(input.get(), cfg);
+        refreshEditor(cfg);
 
         String msg = "Imported: " + result.getImported() + (result.getFailed() > 0 ? ", failed: " + result.getFailed() : "");
         if (result.getErrors() != null && !result.getErrors().isEmpty()) {
@@ -118,6 +90,16 @@ public class MainGui extends JFrame {
             msg += "\n" + String.join("\n", result.getErrors().subList(0, show));
         }
         JOptionPane.showMessageDialog(this, msg, "Import", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void refreshEditor(SingBoxConfig config) {
+        editorPanel.setConfig(config);
+        editorPanel.revalidate();
+        editorPanel.repaint();
+    }
+
+    private void showError(String title, String message) {
+        JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
     }
 
     public static void main(String[] args) {

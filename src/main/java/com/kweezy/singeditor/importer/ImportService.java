@@ -3,19 +3,33 @@ package com.kweezy.singeditor.importer;
 import com.kweezy.singeditor.config.SingBoxConfig;
 import com.kweezy.singeditor.config.outbound.TypedOutbound;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class ImportService {
-    private final List<OutboundImporter> importers = new ArrayList<>();
+    private final List<OutboundImporter> importers;
 
-    public ImportService() {
-        // register default importers
-        importers.add(new VlessImporter());
-        importers.add(new ShadowsocksImporter());
+    public ImportService(List<OutboundImporter> importers) {
+        Objects.requireNonNull(importers, "importers");
+        this.importers = List.copyOf(importers);
+    }
+
+    public static ImportService defaultService() {
+        return new ImportService(defaultImporters());
+    }
+
+    public static List<OutboundImporter> defaultImporters() {
+        return List.of(new VlessImporter(), new ShadowsocksImporter());
     }
 
     public ImportResult importText(String text, SingBoxConfig cfg) {
-        if (text == null) return new ImportResult(0, 0, List.of());
+        Objects.requireNonNull(text, "text");
+        Objects.requireNonNull(cfg, "cfg");
+        if (text.isBlank()) return new ImportResult(0, 0, List.of());
         String[] lines = text.split("\r?\n");
         int imported = 0, failed = 0;
         List<String> errors = new ArrayList<>();
@@ -63,18 +77,6 @@ public class ImportService {
         return set;
     }
 
-    private static String sanitizeTag(String base) {
-        if (base == null) return null;
-        String s = base.replaceAll("[^A-Za-z0-9]", "");
-        return s.isEmpty() ? null : s;
-    }
-
-    private static String uniqueTag(String base, Set<String> existing) {
-        String tag = base; int i = 2;
-        while (existing.contains(tag)) tag = base + i++;
-        return tag;
-    }
-
     private static String nextProxyTag(Set<String> existing) {
         int i = 1;
         String tag = "proxy" + i;
@@ -92,7 +94,8 @@ public class ImportService {
     private static void setTag(TypedOutbound to, String tag) {
         try {
             to.getClass().getMethod("setTag", String.class).invoke(to, tag);
-        } catch (Exception ignore) {
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException("Outbound does not expose setTag(String)", ex);
         }
     }
 }
