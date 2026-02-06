@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = VlessInbound.class, name = "vless"),
         @JsonSubTypes.Type(value = MixedInbound.class, name = "mixed"),
         @JsonSubTypes.Type(value = Hysteria2Inbound.class, name = "hysteria2"),
+        @JsonSubTypes.Type(value = HttpInbound.class, name = "http"),
         @JsonSubTypes.Type(value = ShadowsocksInbound.class, name = "shadowsocks")
 })
 public sealed interface TypedInbound permits TunInbound,
@@ -19,6 +20,7 @@ public sealed interface TypedInbound permits TunInbound,
         VlessInbound,
         MixedInbound,
         Hysteria2Inbound,
+        HttpInbound,
         ShadowsocksInbound {
     String getTag();
 }
